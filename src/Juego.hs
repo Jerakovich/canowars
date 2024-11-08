@@ -38,7 +38,7 @@ mostrarCampo canonPos1 canonPos2 mbDisparo1 mbDisparo2 = do
 -- Limpiar la pantalla
 clearScreen :: IO ()
 clearScreen = putStr "\ESC[2J"
-
+-- hola
 -- Escuchar en tiempo real para mover los cañones
 escucharEnTiempoReal :: Int -> Int -> IO ()
 escucharEnTiempoReal pos1 pos2 = do
