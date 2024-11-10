@@ -16,23 +16,23 @@ mostrarCampo canonPos1 canonPos2 mbDisparo1 mbDisparo2 = do
     mapM_ (mostrarLinea canonPos1 canonPos2 mbDisparo1 mbDisparo2) [0..alturaCampo]
   where
     -- Dibujar el muro en el centro de la pantalla (columna 40)
-    mostrarLinea canonPos1 canonPos2 (Just (x, y)) (Just (a, b)) fila
+    mostrarLinea cPos1 cPos2 (Just (x, y)) (Just (a, b)) fila
         | fila == y = putStrLn $ replicate x ' ' ++ "*" ++ replicate (40 - x - 1) ' ' ++ replicate a ' ' ++ "*" -- Mostrar la bala en (x, y)
-        | fila == 20 = putStrLn $ replicate canonPos1 ' ' ++ "0-¨°°¨-0" ++ replicate (40 - canonPos1 - 1) ' ' ++ replicate canonPos2 ' ' ++ "0-¨°°¨-0" -- Mostrar los cañones
+        | fila == 20 = putStrLn $ replicate cPos1 ' ' ++ "0-¨°°¨-0" ++ replicate (40 - cPos1 - 1) ' ' ++ replicate cPos2 ' ' ++ "0-¨°°¨-0" -- Mostrar los cañones
         | otherwise = putStrLn $ replicate 40 ' ' ++ "#" ++ replicate 30 ' ' -- Muro en la columna 40
 
-    mostrarLinea canonPos1 canonPos2 Nothing (Just (a, b)) fila
+    mostrarLinea cPos1 cPos2 Nothing (Just (a, b)) fila
         | fila == b = putStrLn $ replicate a ' ' ++ "*" ++ replicate 39 ' ' ++ "#" -- Mostrar la bala del segundo mortero
-        | fila == 20 = putStrLn $ replicate canonPos1 ' ' ++ "0-¨°°¨-0" ++ replicate (40 - canonPos1 - 1) ' ' ++ replicate canonPos2 ' ' ++ "0-¨°°¨-0" -- Mostrar los cañones
+        | fila == 20 = putStrLn $ replicate cPos1 ' ' ++ "0-¨°°¨-0" ++ replicate (40 - cPos1 - 1) ' ' ++ replicate cPos2 ' ' ++ "0-¨°°¨-0" -- Mostrar los cañones
         | otherwise = putStrLn $ replicate 40 ' ' ++ "#" ++ replicate 30 ' ' -- Muro en la columna 40
 
-    mostrarLinea canonPos1 canonPos2 (Just (x, y)) Nothing fila
+    mostrarLinea cPos1 cPos2 (Just (x, y)) Nothing fila
         | fila == y = putStrLn $ replicate x ' ' ++ "*" ++ replicate (40 - x - 1) ' ' -- Mostrar la bala del primer mortero
-        | fila == 20 = putStrLn $ replicate canonPos1 ' ' ++ "0-¨°°¨-0" ++ replicate (40 - canonPos1 - 1) ' ' ++ replicate canonPos2 ' ' ++ "0-¨°°¨-0" -- Mostrar los cañones
+        | fila == 20 = putStrLn $ replicate cPos1 ' ' ++ "0-¨°°¨-0" ++ replicate (40 - cPos1 - 1) ' ' ++ replicate cPos2 ' ' ++ "0-¨°°¨-0" -- Mostrar los cañones
         | otherwise = putStrLn $ replicate 40 ' ' ++ "#" ++ replicate 30 ' ' -- Muro en la columna 40
 
-    mostrarLinea canonPos1 canonPos2 Nothing Nothing fila
-        | fila == 20 = putStrLn $ replicate canonPos1 ' ' ++ "0-¨°°¨-0" ++ replicate (40 - canonPos1 - 1) ' ' ++ replicate canonPos2 ' ' ++ "0-¨°°¨-0" -- Mostrar los cañones
+    mostrarLinea cPos1 cPos2 Nothing Nothing fila
+        | fila == 20 = putStrLn $ replicate cPos1 ' ' ++ "0-¨°°¨-0" ++ replicate (40 - cPos1 - 1) ' ' ++ replicate cPos2 ' ' ++ "0-¨°°¨-0" -- Mostrar los cañones
         | otherwise = putStrLn $ replicate 40 ' ' ++ "#" ++ replicate 30 ' ' -- Muro en la columna 40
 
 
