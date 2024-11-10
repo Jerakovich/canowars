@@ -6,29 +6,13 @@ import Control.Monad (when)
 main :: IO ()
 main = do
     putStrLn "\n===== Bienvenido a CANOWARS ====="
-    putStrLn "Configura la HP inicial de los morteros (mínimo 10 puntos)."
+    putStrLn "La HP inicial de los morteros es 15 puntos."
     
-    putStr "HP del Mortero 1: "
-    hFlush stdout
-    hp1 <- leerHp
-
-    putStr "HP del Mortero 2: "
-    hFlush stdout
-    hp2 <- leerHp
+    let hp1 = 15
+    let hp2 = 15
 
     putStrLn "\nConfiguración completa. Comienza el juego!"
     inputLoopConHp 0 10 Nothing Nothing hp1 hp2
-
--- Función para leer y validar la HP del jugador
-leerHp :: IO Int
-leerHp = do
-    input <- getLine
-    let maybeHp = readMaybe input :: Maybe Int
-    case maybeHp of
-        Just hp | hp >= 10 -> return hp
-        _ -> do
-            putStrLn "La HP debe ser un número entero igual o mayor a 10. Intenta nuevamente."
-            leerHp
 
 -- Función que maneja la entrada del juego y el flujo en tiempo real
 inputLoopConHp :: Int -> Int -> Maybe (Int, Int) -> Maybe (Int, Int) -> Int -> Int -> IO ()
@@ -42,12 +26,12 @@ inputLoopConHp pos1 pos2 mbDisparo1 mbDisparo2 hp1 hp2 = do
         case char of
             'a' -> inputLoopConHp (max 0 (pos1 - 1)) pos2 mbDisparo1 mbDisparo2 hp1 hp2 -- Mover el primer mortero
             'd' -> inputLoopConHp (min 40 (pos1 + 1)) pos2 mbDisparo1 mbDisparo2 hp1 hp2 -- Mover el primer mortero
-            '<' -> inputLoopConHp pos1 (max 41 (pos2 - 1)) mbDisparo1 mbDisparo2 hp1 hp2 -- Mover el segundo mortero
-            '>' -> inputLoopConHp pos1 (min 80 (pos2 + 1)) mbDisparo1 mbDisparo2 hp1 hp2 -- Mover el segundo mortero
+            'j' -> inputLoopConHp pos1 (max 41 (pos2 - 1)) mbDisparo1 mbDisparo2 hp1 hp2 -- Mover el segundo mortero
+            'l' -> inputLoopConHp pos1 (min 80 (pos2 + 1)) mbDisparo1 mbDisparo2 hp1 hp2 -- Mover el segundo mortero
             'w' -> if mbDisparo1 == Nothing 
                       then disparar1Main pos1 pos2 hp1 hp2
                       else inputLoopConHp pos1 pos2 mbDisparo1 mbDisparo2 hp1 hp2
-            'e' -> if mbDisparo2 == Nothing
+            'i' -> if mbDisparo2 == Nothing
                       then disparar2Main pos1 pos2 hp1 hp2
                       else inputLoopConHp pos1 pos2 mbDisparo1 mbDisparo2 hp1 hp2
             'q' -> putStrLn "Juego terminado."
