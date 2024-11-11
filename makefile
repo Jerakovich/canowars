@@ -1,28 +1,26 @@
-# Makefile for Canowars project
+# Nombre del ejecutable
+EXECUTABLE = canowars
 
-# Compiler
-HC = ghc
+# Archivos fuente (incluyendo los módulos mencionados)
+SRC =  src/Juego.hs app/Main.hs
 
-# Directories
-SRC_DIR = src
-APP_DIR = app
+# Comando de compilación
+GHC = ghc
 
-# Source files
-SRC_FILES = $(SRC_DIR)/juego.hs
-APP_FILES = $(APP_DIR)/main.hs
+# Flags de compilación
+GHC_FLAGS = -Wall
 
-# Output binary
-TARGET = canowars
+# Objetivo por defecto: compilar y generar el ejecutable
+all: $(EXECUTABLE)
 
-# Default target
-all: $(TARGET)
+# Regla para compilar el proyecto
+$(EXECUTABLE): $(SRC)
+	$(GHC) $(GHC_FLAGS) -o $(EXECUTABLE) $(SRC)
 
-# Build the target
-$(TARGET): $(SRC_FILES) $(APP_FILES)
-	$(HC) -o $(TARGET) $(APP_FILES) $(SRC_FILES)
-
-# Clean up build artifacts
+# Limpiar archivos generados
 clean:
-	rm -f $(TARGET) $(SRC_DIR)/*.hi $(SRC_DIR)/*.o $(APP_DIR)/*.hi $(APP_DIR)/*.o
+	rm -f $(EXECUTABLE) *.hi *.o
 
-.PHONY: all clean
+# Ejecutar el programa
+run: $(EXECUTABLE)
+	./$(EXECUTABLE)

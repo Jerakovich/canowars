@@ -1,115 +1,141 @@
+-- src/Juego.hs
 module Juego where
 
 import System.IO
 import Control.Concurrent
-import Control.Monad (when)
 
--- Mostrar el cañón en la posición indicada
-mostrarCanon :: Int -> IO ()
-mostrarCanon pos = putStrLn $ replicate pos ' ' ++ "0-_||_-0"
-
--- Mostrar el campo de batalla con el cañón, disparo y muro
-mostrarCampo :: Int -> Int -> Maybe (Int, Int) -> Maybe (Int, Int) -> IO ()
-mostrarCampo canonPos1 canonPos2 mbDisparo1 mbDisparo2 = do
+-- Mostrar el campo de batalla con los cañones y las barras de HP y combustible
+mostrarCampo :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> IO ()
+mostrarCampo pos1 pos2 fuel1 fuel2 angle1 angle2 hp1 hp2 = do
     clearScreen
-    let alturaCampo = 20
-    mapM_ (mostrarLinea canonPos1 canonPos2 mbDisparo1 mbDisparo2) [0..alturaCampo]
-  where
-    -- Dibujar el muro en el centro de la pantalla (columna 40)
-    mostrarLinea cPos1 cPos2 (Just (x, y)) (Just (a, b)) fila
-        | fila == y = putStrLn $ replicate x ' ' ++ "*" ++ replicate (40 - x - 1) ' ' ++ replicate a ' ' ++ "*" -- Mostrar la bala en (x, y)
-        | fila == 20 = putStrLn $ replicate cPos1 ' ' ++ "0-¨°°¨-0" ++ replicate (40 - cPos1 - 1) ' ' ++ replicate cPos2 ' ' ++ "0-¨°°¨-0" -- Mostrar los cañones
-        | otherwise = putStrLn $ replicate 40 ' ' ++ "#" ++ replicate 30 ' ' -- Muro en la columna 40
+    -- Mostrar la barra de HP y combustible antes de las acciones
+    putStrLn $ "Jugador 1 - HP: " ++ show hp1 ++ " | Combustible: " ++ show fuel1 ++ " | Ángulo: " ++ show angle1 ++ "°"
+    putStrLn $ "Jugador 2 - HP: " ++ show hp2 ++ " | Combustible: " ++ show fuel2 ++ " | Ángulo: " ++ show angle2 ++ "°"
+    putStrLn ""
+    let alturaCampo = 10
+    -- Mostrar la separación con asteriscos y el perímetro del tablero
+    putStrLn "_____________________________________________________________________________________________________"
+    -- Mostrar la visualización del campo de batalla (proyectiles, morteros)
+    mapM_ (mostrarLinea pos1 pos2 fuel1 fuel2 angle1 angle2 hp1 hp2) [0..alturaCampo]
+    
+    putStrLn "|###################################################################################################|"
 
-    mostrarLinea cPos1 cPos2 Nothing (Just (a, b)) fila
-        | fila == b = putStrLn $ replicate a ' ' ++ "*" ++ replicate 39 ' ' ++ "#" -- Mostrar la bala del segundo mortero
-        | fila == 20 = putStrLn $ replicate cPos1 ' ' ++ "0-¨°°¨-0" ++ replicate (40 - cPos1 - 1) ' ' ++ replicate cPos2 ' ' ++ "0-¨°°¨-0" -- Mostrar los cañones
-        | otherwise = putStrLn $ replicate 40 ' ' ++ "#" ++ replicate 30 ' ' -- Muro en la columna 40
+-- Mostrar cada línea del campo de batalla
+mostrarLinea :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> IO ()
+mostrarLinea pos1 pos2 fuel1 fuel2 angle1 angle2 hp1 hp2 fila
+    
+    | fila == 9 = do
+        -- Línea de cañones en la parte más baja
+        putStrLn $ "|" ++ replicate pos1 ' ' ++ "0-¨°°¨-0" ++ replicate (40 - pos1) ' ' ++ "***" ++ replicate (pos2 - 41) ' ' ++ "0-¨°°¨-0" ++ replicate (81-pos2) ' ' ++ "|"
+    | fila == 8 =
+        if angle1 == 0 && angle2 == 0 then -- Listo
+            putStrLn $ "|" ++ replicate (pos1 + 3) ' ' ++ "____"  ++ replicate (41 - pos1) ' ' ++ "***" ++ replicate (pos2 - 40) ' ' ++ "____" ++ replicate (84-pos2) ' ' ++ "|"
+        
+        else if angle1 == 90 && angle2 == 90 then --Listo
+            putStrLn $ "|" ++ replicate (pos1 + 2) ' ' ++ " |"  ++ replicate (44 - pos1) ' ' ++ "***" ++ replicate (pos2 - 37) ' ' ++ " |" ++ replicate (83-pos2) ' ' ++ "|"
+        
+        else if angle1 == 0 && angle2 == 90 then --
+            putStrLn $ "|" ++ replicate (pos1 + 3) ' ' ++ "____"  ++ replicate (41 - pos1) ' ' ++ "***" ++ replicate (pos2 - 37) ' ' ++ " |" ++ replicate (83-pos2) ' ' ++ "|"
+        
+        else if angle1 == 90 && angle2 == 0 then -- 
+            putStrLn $ "|" ++ replicate (pos1 + 2) ' ' ++ " |"  ++ replicate (44 - pos1) ' ' ++ "***" ++ replicate (pos2 - 40) ' ' ++ "____" ++ replicate (84-pos2) ' ' ++ "|"
 
-    mostrarLinea cPos1 cPos2 (Just (x, y)) Nothing fila
-        | fila == y = putStrLn $ replicate x ' ' ++ "*" ++ replicate (40 - x - 1) ' ' -- Mostrar la bala del primer mortero
-        | fila == 20 = putStrLn $ replicate cPos1 ' ' ++ "0-¨°°¨-0" ++ replicate (40 - cPos1 - 1) ' ' ++ replicate cPos2 ' ' ++ "0-¨°°¨-0" -- Mostrar los cañones
-        | otherwise = putStrLn $ replicate 40 ' ' ++ "#" ++ replicate 30 ' ' -- Muro en la columna 40
+        else if angle1 == 0 then --Listo
+            putStrLn $ "|" ++ replicate (pos1 + 3) ' ' ++ "____"  ++ replicate (41 - pos1) ' ' ++ "***" ++ replicate (pos2 - 37) ' ' ++ combineAngle2 angle2 ++ replicate (84-pos2) ' ' ++ "|"
+       
+        else if angle2 == 0 then -- Listo
+            putStrLn $ "|" ++ replicate (pos1 + 3) ' ' ++ combineAngle1 angle1  ++ replicate (44 - pos1) ' ' ++ "***" ++ replicate (pos2 - 40) ' ' ++ "____" ++ replicate (84-pos2) ' ' ++ "|"
 
-    mostrarLinea cPos1 cPos2 Nothing Nothing fila
-        | fila == 20 = putStrLn $ replicate cPos1 ' ' ++ "0-¨°°¨-0" ++ replicate (40 - cPos1 - 1) ' ' ++ replicate cPos2 ' ' ++ "0-¨°°¨-0" -- Mostrar los cañones
-        | otherwise = putStrLn $ replicate 40 ' ' ++ "#" ++ replicate 30 ' ' -- Muro en la columna 40
+        else if angle1 == 90 then -- Listo
+           putStrLn $ "|" ++ replicate (pos1 + 2) ' ' ++ " |"  ++ replicate (44 - pos1) ' ' ++ "***" ++ replicate (pos2 - 37) ' ' ++ combineAngle2 angle2 ++ replicate (84-pos2) ' ' ++ "|"
+       
+       else if angle2 == 90 then -- Listo
+           putStrLn $ "|" ++ replicate (pos1 + 3) ' ' ++ combineAngle1 angle1  ++ replicate (44 - pos1) ' ' ++ "***" ++ replicate (pos2 - 37) ' ' ++ " |" ++ replicate (83-pos2) ' ' ++ "|"
 
+        else  
+            putStrLn $ "|" ++ replicate (pos1 + 3) ' ' ++ combineAngle1 angle1  ++ replicate (44 - pos1) ' ' ++ "***" ++ replicate (pos2 - 37) ' ' ++ combineAngle2 angle2 ++ replicate (84-pos2) ' ' ++ "|"
+            
+    | fila == 7 = 
+        if angle1 == 0 && angle2 == 0 then -- Listo
+            putStrLn $ "|" ++ replicate 48 ' ' ++ "***" ++ replicate 48 ' ' ++"|"
+        
+        else if angle1 == 90 && angle2 == 90 then --Listo
+            putStrLn $ "|" ++ replicate (pos1 + 2) ' ' ++ " |"  ++ replicate (44 - pos1) ' ' ++ "***" ++ replicate (pos2 - 37) ' ' ++ " |" ++ replicate (83-pos2) ' ' ++ "|"
+        
+        else if angle1 == 0 && angle2 == 90 then -- Listo
+            putStrLn $ "|" ++ replicate 48 ' '  ++ "***" ++ replicate (pos2 - 37) ' ' ++ " |" ++ replicate (83-pos2) ' ' ++ "|"
+
+        else if angle1 == 90 && angle2 == 0 then -- Listo
+            putStrLn $ "|" ++ replicate (pos1 + 2) ' ' ++ " |"  ++ replicate (44 - pos1) ' ' ++ "***" ++ replicate 48 ' ' ++ "|"
+
+        else if angle1 == 0 then --
+            putStrLn $ "|" ++  replicate 48 ' ' ++ "***" ++ replicate (pos2 - 38) ' ' ++ combineAngle2 angle2 ++ replicate (85-pos2) ' ' ++ "|"
+    
+        else if angle2 == 0 then -- Listo
+            putStrLn $ "|" ++ replicate (pos1 + 4) ' ' ++ combineAngle1 angle1  ++ replicate (43 - pos1) ' ' ++ "***" ++ replicate 48 ' ' ++ "|"
+
+        else if angle1 == 90 then -- 
+            putStrLn $ "|" ++ replicate (pos1 + 2) ' ' ++ " |"  ++ replicate (44 - pos1) ' ' ++ "***" ++ replicate (pos2 - 38) ' ' ++ combineAngle2 angle2 ++ replicate (85-pos2) ' ' ++ "|"
+    
+         else if angle2 == 90 then -- 
+            putStrLn $ "|" ++ replicate (pos1 + 4) ' ' ++ combineAngle1 angle1  ++ replicate (43 - pos1) ' ' ++ "***" ++ replicate (pos2 - 37) ' ' ++ " |" ++ replicate (83-pos2) ' ' ++ "|"
+
+        else  
+            putStrLn $ "|" ++ replicate (pos1 + 4) ' ' ++ combineAngle1 angle1  ++ replicate (43 - pos1) ' ' ++ "***" ++ replicate (pos2 - 38) ' ' ++ combineAngle2 angle2 ++ replicate (85-pos2) ' ' ++ "|"
+
+    | fila == 6 = 
+        if angle1 == 0 && angle2 == 0 then -- Listo
+            putStrLn $ "|" ++ replicate 48 ' ' ++ "***" ++ replicate 48 ' ' ++"|"
+        
+        else if angle1 == 90 && angle2 == 90 then --Listo
+            putStrLn $ "|" ++ replicate (pos1 + 2) ' ' ++ " |"  ++ replicate (44 - pos1) ' ' ++ "***" ++ replicate (pos2 - 37) ' ' ++ " |" ++ replicate (83-pos2) ' ' ++ "|"
+        
+        else if angle1 == 0 && angle2 == 90 then -- Listo
+            putStrLn $ "|" ++ replicate 48 ' '  ++ "***" ++ replicate (pos2 - 37) ' ' ++ " |" ++ replicate (83-pos2) ' ' ++ "|"
+
+        else if angle1 == 90 && angle2 == 0 then -- Listo
+            putStrLn $ "|" ++ replicate (pos1 + 2) ' ' ++ " |"  ++ replicate (44 - pos1) ' ' ++ "***" ++ replicate 48 ' ' ++ "|"
+        
+        else if angle1 == 90 && angle2 < 45  then -- 
+            putStrLn $ "|" ++ replicate (pos1 + 2) ' ' ++ " |"  ++ replicate (44 - pos1) ' ' ++ "***" ++ replicate 48 ' ' ++ "|"
+
+        else if angle2 == 90  && angle1 < 45 then -- 
+            putStrLn $ "|" ++ replicate 48 ' ' ++ "***" ++ replicate (pos2 - 37) ' ' ++ " |" ++ replicate (83-pos2) ' ' ++ "|"
+
+        else if angle2 == 90 then
+            putStrLn $ "|" ++ replicate (pos1 + 5) ' ' ++ combineAngle1 angle1  ++ replicate (42 - pos1) ' ' ++ "***" ++ replicate (pos2 - 37) ' ' ++ " |" ++ replicate (83-pos2) ' ' ++ "|"
+        
+        else if angle1 > 45 && angle2 > 45 then --Listo
+            putStrLn $ "|" ++ replicate (pos1 + 5) ' ' ++ "/"  ++ replicate (42 - pos1) ' ' ++ "***" ++ replicate (pos2 - 39) ' ' ++ "\\" ++ replicate (86-pos2) ' ' ++ "|"
+        else if angle1 > 45 then
+            putStrLn $ "|" ++ replicate (pos1 + 5) ' ' ++ "/"  ++ replicate (42 - pos1) ' ' ++ "***" ++ replicate 48 ' ' ++ "|"
+        else if angle2 > 45 then
+            putStrLn $ "|" ++ replicate 48 ' ' ++ "***" ++ replicate (pos2 - 39) ' ' ++ combineAngle2 angle2 ++ replicate (86-pos2) ' ' ++ "|"
+        else
+            putStrLn $ "|" ++ replicate 48 ' ' ++ "***" ++ replicate 48 ' ' ++"|"
+
+    | fila == 5 = putStrLn $ "|" ++ replicate 48 ' ' ++ "   " ++ replicate 48 ' ' ++"|"
+    | fila == 4 = putStrLn $ "|" ++ replicate 48 ' ' ++ "   " ++ replicate 48 ' ' ++"|"
+    | fila == 3 = putStrLn $ "|" ++ replicate 48 ' ' ++ "   " ++ replicate 48 ' ' ++"|"
+    | fila == 2 = putStrLn $ "|" ++ replicate 48 ' ' ++ "   " ++ replicate 48 ' ' ++"|"
+    | fila == 1 = putStrLn $ "|" ++ replicate 48 ' ' ++ "   " ++ replicate 48 ' ' ++"|"
+    | fila == 0 = putStrLn $ "|" ++ replicate 48 ' ' ++ "   " ++ replicate 48 ' ' ++"|"
+    | otherwise = return ()
 
 -- Limpiar la pantalla
 clearScreen :: IO ()
-clearScreen = putStr "\ESC[2J"
+clearScreen = putStr "\ESC[2J\ESC[H"
 
--- Escuchar en tiempo real para mover los cañones
-escucharEnTiempoReal :: Int -> Int -> Int -> Int -> IO ()
-escucharEnTiempoReal pos1 pos2 hp1 hp2 = do
-    hSetBuffering stdin NoBuffering
-    hSetEcho stdin False
-    mostrarCampo pos1 pos2 Nothing Nothing
-    inputLoop pos1 pos2 Nothing Nothing hp1 hp2
+combineAngle2 :: Int -> String
+combineAngle2 angle2
+    | angle2 < 45 && angle2 > 0 = "\\"
+    | angle2 >= 45 && angle2 < 90 = "\\"
+    | angle2 == 90 = "|"
+    | otherwise = ""
 
-inputLoop :: Int -> Int -> Maybe (Int, Int) -> Maybe (Int, Int) -> Int -> Int -> IO ()
-inputLoop pos1 pos2 mbDisparo1 mbDisparo2 hp1 hp2 = do
-    when (hp1 > 0 && hp2 > 0) $ do
-        threadDelay 100000 -- Controla la velocidad de actualización
-        inputAvailable <- hReady stdin
-        if inputAvailable
-            then do
-                char <- getChar
-                case char of
-                    'a' -> actualizarPos1 (max 0 (pos1 - 1)) mbDisparo1 mbDisparo2 hp1 hp2 -- Mover el primer mortero
-                    'd' -> actualizarPos1 (min 40 (pos1 + 1)) mbDisparo1 mbDisparo2 hp1 hp2 -- Limita posición máxima para el primer mortero
-                    '<' -> actualizarPos2 (max 41 (pos2 - 1)) mbDisparo1 mbDisparo2 hp1 hp2 -- Mover el segundo mortero a la izquierda
-                    '>' -> actualizarPos2 (min 80 (pos2 + 1)) mbDisparo1 mbDisparo2 hp1 hp2 -- Mover el segundo mortero a la derecha
-                    '1' -> inclinarCanon1 (max 0 (pos1 - 1)) mbDisparo1 mbDisparo2 hp1 hp2 -- Inclinar el primer cañón a la izquierda
-                    '2' -> inclinarCanon2 (min 40 (pos2 + 1)) mbDisparo1 mbDisparo2 hp1 hp2 -- Inclinar el segundo cañón a la derecha
-                    'w' -> if mbDisparo1 == Nothing 
-                              then disparar1 pos1 pos2 hp1 hp2
-                              else inputLoop pos1 pos2 mbDisparo1 mbDisparo2 hp1 hp2
-                    'e' -> if mbDisparo2 == Nothing
-                              then disparar2 pos1 pos2 hp1 hp2
-                              else inputLoop pos1 pos2 mbDisparo1 mbDisparo2 hp1 hp2
-                    'q' -> putStrLn "Juego terminado."
-                    _   -> inputLoop pos1 pos2 mbDisparo1 mbDisparo2 hp1 hp2
-            else moverDisparo1 pos1 pos2 mbDisparo1 hp1 hp2 >> moverDisparo2 pos1 pos2 mbDisparo2 hp1 hp2
-  where
-    -- Actualizar posición del primer mortero
-    actualizarPos1 newPos mbDisparo1 mbDisparo2 hp1 hp2 = do
-        mostrarCampo newPos pos2 mbDisparo1 mbDisparo2
-        inputLoop newPos pos2 mbDisparo1 mbDisparo2 hp1 hp2
-    
-    -- Actualizar posición del segundo mortero
-    actualizarPos2 newPos mbDisparo1 mbDisparo2 hp1 hp2 = do
-        mostrarCampo pos1 newPos mbDisparo1 mbDisparo2
-        inputLoop pos1 newPos mbDisparo1 mbDisparo2 hp1 hp2
-    
-    -- Función para inclinar el primer cañón
-    inclinarCanon1 newPos mbDisparo1 mbDisparo2 hp1 hp2 = do
-        mostrarCampo newPos pos2 mbDisparo1 mbDisparo2
-        inputLoop newPos pos2 mbDisparo1 mbDisparo2 hp1 hp2
-    
-    -- Función para inclinar el segundo cañón
-    inclinarCanon2 newPos mbDisparo1 mbDisparo2 hp1 hp2 = do
-        mostrarCampo pos1 newPos mbDisparo1 mbDisparo2
-        inputLoop pos1 newPos mbDisparo1 mbDisparo2 hp1 hp2
-
--- Función para disparar del primer mortero
-disparar1 :: Int -> Int -> Int -> Int -> IO ()
-disparar1 canonPos1 canonPos2 hp1 hp2 = inputLoop canonPos1 canonPos2 (Just (canonPos1 + 4, 18)) Nothing hp1 hp2
-
--- Función para disparar del segundo mortero
-disparar2 :: Int -> Int -> Int -> Int -> IO ()
-disparar2 canonPos1 canonPos2 hp1 hp2 = inputLoop canonPos1 canonPos2 Nothing (Just (canonPos2 + 4, 18)) hp1 hp2
-
--- Mover disparo hacia arriba
-moverDisparo1 :: Int -> Int -> Maybe (Int, Int) -> Int -> Int -> IO ()
-moverDisparo1 canonPos1 canonPos2 Nothing hp1 hp2 = inputLoop canonPos1 canonPos2 Nothing Nothing hp1 hp2
-moverDisparo1 canonPos1 canonPos2 (Just (x, y)) hp1 hp2
-    | y <= 0 = inputLoop canonPos1 canonPos2 Nothing Nothing hp1 hp2
-    | otherwise = inputLoop canonPos1 canonPos2 (Just (x, y - 1)) Nothing hp1 hp2
-
-moverDisparo2 :: Int -> Int -> Maybe (Int, Int) -> Int -> Int -> IO ()
-moverDisparo2 canonPos1 canonPos2 Nothing hp1 hp2 = inputLoop canonPos1 canonPos2 Nothing Nothing hp1 hp2
-moverDisparo2 canonPos1 canonPos2 (Just (x, y)) hp1 hp2
-    | y <= 0 = inputLoop canonPos1 canonPos2 Nothing Nothing hp1 hp2
-    | otherwise = inputLoop canonPos1 canonPos2 Nothing (Just (x, y - 1)) hp1 hp2
+combineAngle1 :: Int -> String
+combineAngle1 angle1
+    | angle1 < 45 && angle1 > 0 = "/"
+    | angle1 >= 45 && angle1 < 90 = "/"
+    | angle1 == 90 = "|"
+    | otherwise = ""
