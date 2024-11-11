@@ -1,7 +1,2 @@
-canowars
-bin/Juego.hi
-bin/Juego.o
-bin/Main.hi
-bin/Main.o
-bin/Utils.hi
-bin/Utils.o
+/canowars
+/bin
