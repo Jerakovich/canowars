@@ -15,7 +15,7 @@ APP_FILES = $(APP_DIR)/Main.hs
 TARGET = canowars
 
 # Default target
-all: clean_bin $(TARGET)
+all: clean $(TARGET)
 
 # Build the target
 $(TARGET): $(SRC_FILES) $(SRC_UTILS) $(APP_FILES)
@@ -25,8 +25,4 @@ $(TARGET): $(SRC_FILES) $(SRC_UTILS) $(APP_FILES)
 clean:
 	rm -f $(TARGET) $(BIN_DIR)/*.hi $(BIN_DIR)/*.o
 
-# Clean bin directory
-clean_bin:
-	rm -f $(BIN_DIR)/*
-
-.PHONY: all clean clean_bin
+.PHONY: all clean
