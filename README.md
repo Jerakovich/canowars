@@ -70,12 +70,13 @@ Este proyecto incluye un `Makefile` para facilitar la compilación.
 ### Comandos Disponibles en el Makefile
 
 - `make` o `make all`: Compila el juego y genera el ejecutable `canowars` en el directorio raíz.
-- `make clean`: Elimina los archivos de compilación (`.o`, `.hi`).
+
 - `make clean_bin`: Limpia únicamente el contenido de la carpeta `bin`.
 
 ## Créditos
 
-Sebastian Pangue - [correo](sebastian.pangue@alumnos.uach.cl)
-Jeral Ojeda - [correo](jeral.ojeda@alumnos.uach.cl)
-Luis Olivares - [correo](Luis.olivares@alumnos.uach.cl)
-Eduardo Leal - [correo](eduardo.leal@alumnos.uach.cl)
+Sebastian Pangue - [sebastian.pangue@alumnos.uach.cl](mailto:sebastian.pangue@alumnos.uach.cl)
+Jeral Ojeda - [jeral.ojeda@alumnos.uach.cl](mailto:jeral.ojeda@alumnos.uach.cl)
+Luis Olivares - [luis.olivares@alumnos.uach.cl](mailto:luis.olivares@alumnos.uach.cl)
+Eduardo Leal - [eduardo.leal@alumnos.uach.cl](mailto:eduardo.leal@alumnos.uach.cl)
+
