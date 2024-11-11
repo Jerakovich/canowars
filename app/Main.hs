@@ -14,7 +14,7 @@ main = do
     hp1 <- leerHp
     let hp2 = hp1
     putStrLn "\nConfiguración completa. Comienza el juego!"
-    inputLoopConHp 20 60 100 100 hp1 hp2 1
+    inputLoopConHp 20 60 100 100 45 45 hp1 hp2 1
 
 -- Función para leer y validar la HP del jugador
 leerHp :: IO Int
@@ -28,7 +28,7 @@ leerHp = do
             leerHp
 
 -- Función que maneja el ciclo del juego por turnos
-inputLoopConHp :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> IO ()
+inputLoopConHp :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> IO ()
 -- pos1: posición del mortero 1
 -- pos2: posición del mortero 2
 -- fuel1: combustible del mortero 1
@@ -38,10 +38,10 @@ inputLoopConHp :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> IO ()
 -- hp1: HP del mortero 1
 -- hp2: HP del mortero 2
 -- turno: número de turno actual
-inputLoopConHp pos1 pos2 fuel1 fuel2 hp1 hp2 turno = do
+inputLoopConHp pos1 pos2 fuel1 fuel2 angle1 angle2 hp1 hp2 turno = do
     hSetBuffering stdin NoBuffering
     hSetEcho stdin False
-    mostrarCampo pos1 pos2 fuel1 fuel2 hp1 hp2
+    mostrarCampo pos1 pos2 fuel1 fuel2 angle1 angle2 hp1 hp2
     
     -- Si ambos morteros tienen HP positivos, el juego continúa
     when (hp1 > 0 && hp2 > 0) $ do
@@ -49,23 +49,33 @@ inputLoopConHp pos1 pos2 fuel1 fuel2 hp1 hp2 turno = do
         if turno `mod` 2 == 1
             then do -- Turno del jugador 1
                 putStrLn "\nElige una acción (Jugador 1):"
-                putStrLn "(a: mover izquierda, d: mover derecha, e: disparar)"
+                putStrLn "(a: mover izquierda, d: mover derecha, w: elevar cañón, s: bajar cañón, e: disparar)"
                 char1 <- getChar
                 case char1 of
                     -- Mover mortero 1 izquierda (gasta 5 de combustible, no permite combustible negativo)
                     'a' -> if fuel1 >= 5
-                        then inputLoopConHp (max 0 (pos1 - 1)) pos2 (max 0 (fuel1 - 5)) fuel2 hp1 hp2 turno 
-                        else inputLoopConHp pos1 pos2 fuel1 fuel2 hp1 hp2 (turno + 1)
+                        then inputLoopConHp (max 0 (pos1 - 1)) pos2 (max 0 (fuel1 - 5)) fuel2 angle1 angle2 hp1 hp2 turno 
+                        else inputLoopConHp pos1 pos2 fuel1 fuel2 angle1 angle2 hp1 hp2 (turno + 1)
                     
                     -- Mover mortero 1 derecha (gasta 5 de combustible, no permite combustible negativo)
                     'd' -> if fuel1 >= 5
-                        then inputLoopConHp (min 40 (pos1 + 1)) pos2 (max 0 (fuel1 - 5)) fuel2 hp1 hp2 turno 
-                        else inputLoopConHp pos1 pos2 fuel1 fuel2 hp1 hp2 (turno + 1)
+                        then inputLoopConHp (min 40 (pos1 + 1)) pos2 (max 0 (fuel1 - 5)) fuel2 angle1 angle2 hp1 hp2 turno 
+                        else inputLoopConHp pos1 pos2 fuel1 fuel2 angle1 angle2 hp1 hp2 (turno + 1)
+
+                    -- Mover cañon hacia arriba (gasta 1 de combustible, no permite combustible negativo)
+                    'w' -> if fuel1 >= 1
+                        then inputLoopConHp pos1 pos2 (max 0 (fuel1 - 1)) fuel2 (min 90 (angle1 + 1)) angle2 hp1 hp2 turno
+                        else inputLoopConHp pos1 pos2 fuel1 fuel2 angle1 angle2 hp1 hp2 (turno + 1)
                     
+                    -- Mover cañon hacia abajo (gasta 1 de combustible, no permite combustible negativo)
+                    's' -> if fuel1 >= 1
+                        then inputLoopConHp pos1 pos2 (max 0 (fuel1 - 1)) fuel2 (max 0 (angle1 - 1)) angle2 hp1 hp2 turno
+                        else inputLoopConHp pos1 pos2 fuel1 fuel2 angle1 angle2 hp1 hp2 (turno + 1)
+
                     -- Disparar mortero 1 (gasta 3 de combustible, no permite combustible negativo)
                     'e' -> if fuel1 >= 3 
-                        then disparar1Main pos1 pos2 (max 0 (fuel1 - 3)) fuel2 hp1 hp2 (turno + 1)
-                        else inputLoopConHp pos1 pos2 fuel1 fuel2 hp1 hp2 (turno + 1)
+                        then disparar1Main pos1 pos2 (max 0 (fuel1 - 3)) fuel2 angle1 angle2 hp1 hp2 (turno + 1)
+                        else inputLoopConHp pos1 pos2 fuel1 fuel2 angle1 angle2 hp1 hp2 (turno + 1)
                     
                     
                     -- Salir del juego
@@ -76,23 +86,32 @@ inputLoopConHp pos1 pos2 fuel1 fuel2 hp1 hp2 turno = do
             
             else do -- Turno del jugador 2
                 putStrLn "\nElige una acción (Jugador 2):"
-                putStrLn "(4: mover izquierda, 6: mover derecha, 9: disparar)"
+                putStrLn "(4: mover izquierda, 6: mover derecha, 7: disparar)"
                 char2 <- getChar
                 case char2 of
                     -- Mover mortero 2 izquierda (gasta 5 de combustible, no permite combustible negativo)
                     '4' -> if fuel2 >= 5
-                        then inputLoopConHp pos1 (max 41 (pos2 - 1)) fuel1 (max 0 (fuel2 - 5)) hp1 hp2 turno 
-                        else inputLoopConHp pos1 pos2 fuel1 fuel2 hp1 hp2 (turno + 1)
+                        then inputLoopConHp pos1 (max 41 (pos2 - 1)) fuel1 (max 0 (fuel2 - 5)) angle1 angle2 hp1 hp2 turno 
+                        else inputLoopConHp pos1 pos2 fuel1 fuel2 angle1 angle2 hp1 hp2 (turno + 1)
                     
                     -- Mover mortero 2 derecha (gasta 5 de combustible, no permite combustible negativo)
                     '6' -> if fuel2 >= 5
-                        then inputLoopConHp pos1 (min 81 (pos2 + 1)) fuel1 (max 0 (fuel2 - 5)) hp1 hp2 turno 
-                        else inputLoopConHp pos1 pos2 fuel1 fuel2 hp1 hp2 (turno + 1)
+                        then inputLoopConHp pos1 (min 81 (pos2 + 1)) fuel1 (max 0 (fuel2 - 5)) angle1 angle2 hp1 hp2 turno 
+                        else inputLoopConHp pos1 pos2 fuel1 fuel2 angle1 angle2 hp1 hp2 (turno + 1)
+                    -- Mover cañon hacia arriba (gasta 1 de combustible, no permite combustible negativo)
+                    '8' -> if fuel2 >= 1
+                        then inputLoopConHp pos1 pos2 fuel1 (max 0 (fuel2 - 1)) angle1 (min 90 (angle2 + 1)) hp1 hp2 turno
+                        else inputLoopConHp pos1 pos2 fuel1 fuel2 angle1 angle2 hp1 hp2 (turno + 1)
+                    
+                    -- Mover cañon hacia abajo (gasta 1 de combustible, no permite combustible negativo)
+                    '5' -> if fuel2 >= 1
+                        then inputLoopConHp pos1 pos2 fuel1 (max 0 (fuel2 - 1)) angle1 (max 0 (angle2 - 1)) hp1 hp2 turno
+                        else inputLoopConHp pos1 pos2 fuel1 fuel2 angle1 angle2 hp1 hp2 (turno + 1)
 
                     -- Disparar mortero 2 (gasta 3 de combustible, no permite combustible negativo)
                     '7' -> if fuel2 >= 3 
-                        then disparar2Main pos1 pos2 fuel1 (max 0 (fuel2 - 3)) hp1 hp2 (turno + 1)
-                        else inputLoopConHp pos1 pos2 fuel1 fuel2 hp1 hp2 (turno + 1)
+                        then disparar2Main pos1 pos2 fuel1 (max 0 (fuel2 - 3)) angle1 angle2 hp1 hp2 (turno + 1)
+                        else inputLoopConHp pos1 pos2 fuel1 fuel2 angle1 angle2 hp1 hp2 (turno + 1)
                     
                     -- Salir del juego
                     'p' -> putStrLn "Juego terminado."
@@ -104,22 +123,26 @@ inputLoopConHp pos1 pos2 fuel1 fuel2 hp1 hp2 turno = do
 
         -- Llamada recursiva para el siguiente turno, alternando entre los jugadores
         if fuel1 == 0 || fuel1 < 3
-            then inputLoopConHp pos1 pos2 100 fuel2 hp1 hp2 0
+            then inputLoopConHp pos1 pos2 100 fuel2 angle1 angle2 hp1 hp2 0
             else if fuel2 == 0 || fuel2 < 3
-                then inputLoopConHp pos1 pos2 fuel1 100 hp1 hp2 1
-                else inputLoopConHp pos1 pos2 fuel1 fuel2 hp1 hp2 turno
+                then inputLoopConHp pos1 pos2 fuel1 100 angle1 angle2 hp1 hp2 1
+                else inputLoopConHp pos1 pos2 fuel1 fuel2 angle1 angle2 hp1 hp2 turno
         
 
  
+
+
+
+
 -- Función para disparar el primer mortero
-disparar1Main :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> IO ()
-disparar1Main pos1 pos2 fuel1 fuel2 hp1 hp2 turno = do
+disparar1Main :: Int -> Int -> Int -> Int -> Int -> Int-> Int -> Int -> Int -> IO ()
+disparar1Main pos1 pos2 fuel1 fuel2 angle1 angle2 hp1 hp2 turno = do
     let newFuel1 = fuel1 - 3
     let newHp2 = if pos1 == pos2 then hp2 - 10 else hp2
-    inputLoopConHp pos1 pos2 newFuel1 fuel2 hp1 newHp2 turno
+    inputLoopConHp pos1 pos2 newFuel1 fuel2 angle1 angle2 hp1 newHp2 turno
 
 -- Función para disparar el segundo mortero
-disparar2Main :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> IO ()
-disparar2Main pos1 pos2 fuel1 fuel2 hp1 hp2 turno = do
+disparar2Main :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int-> Int -> IO ()
+disparar2Main pos1 pos2 fuel1 fuel2 angle1 angle2 hp1 hp2 turno = do
     let newHp1 = if pos1 == pos2 then hp1 - 10 else hp1
-    inputLoopConHp pos1 pos2 100 100 newHp1 hp2 turno
+    inputLoopConHp pos1 pos2 100 100 angle1 angle2 newHp1 hp2 turno
