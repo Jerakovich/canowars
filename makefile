@@ -1,26 +1,32 @@
-# Nombre del ejecutable
-EXECUTABLE = canowars
+# Compiler
+HC = ghc
 
-# Archivos fuente (incluyendo los módulos mencionados)
-SRC =  src/Juego.hs app/Main.hs
+# Directories
+SRC_DIR = src
+APP_DIR = app
+BIN_DIR = bin
 
-# Comando de compilación
-GHC = ghc
+# Source files
+SRC_FILES = $(SRC_DIR)/Juego.hs
+SRC_UTILS = $(SRC_DIR)/Utils.hs
+APP_FILES = $(APP_DIR)/Main.hs
 
-# Flags de compilación
-GHC_FLAGS = -Wall
+# Output binary
+TARGET = canowars
 
-# Objetivo por defecto: compilar y generar el ejecutable
-all: $(EXECUTABLE)
+# Default target
+all: clean_bin $(TARGET)
 
-# Regla para compilar el proyecto
-$(EXECUTABLE): $(SRC)
-	$(GHC) $(GHC_FLAGS) -o $(EXECUTABLE) $(SRC)
+# Build the target
+$(TARGET): $(SRC_FILES) $(SRC_UTILS) $(APP_FILES)
+	$(HC) -o $(TARGET) -outputdir $(BIN_DIR) -hidir $(BIN_DIR) -package random $(SRC_UTILS) $(APP_FILES) $(SRC_FILES)
 
-# Limpiar archivos generados
+# Clean up build artifacts
 clean:
-	rm -f $(EXECUTABLE) *.hi *.o
+	rm -f $(TARGET) $(BIN_DIR)/*.hi $(BIN_DIR)/*.o
 
-# Ejecutar el programa
-run: $(EXECUTABLE)
-	./$(EXECUTABLE)
+# Clean bin directory
+clean_bin:
+	rm -f $(BIN_DIR)/*
+
+.PHONY: all clean clean_bin

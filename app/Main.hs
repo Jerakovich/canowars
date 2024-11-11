@@ -111,10 +111,6 @@ inputLoopConHp pos1 pos2 fuel1 fuel2 hp1 hp2 turno = do
         
 
  
-
-
-
-
 -- Función para disparar el primer mortero
 disparar1Main :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> IO ()
 disparar1Main pos1 pos2 fuel1 fuel2 hp1 hp2 turno = do
